@@ -93,6 +93,18 @@ python3 main.py
 
 Open `http://localhost:7860` in your browser.
 
+## Deployment
+
+This project is also deployed on AWS EC2 (t3.micro, us-west-2) running Ubuntu 24.04 LTS.
+
+### Infrastructure
+- EC2 t3.micro instance (2 vCPU, 1GB RAM + 2GB swap)
+- 20GB EBS gp3 volume
+- Security group allowing ports 22 (SSH), 80 (HTTP), and 7860 (Gradio)
+- systemd service for automatic startup and restart on failure
+
+
+
 ## Updating rules
 
 MTG rules update approximately four times per year with each major set release. To update:
