@@ -101,7 +101,6 @@ MTG rules update approximately four times per year with each major set release. 
 ## Known limitations
 
 - **Ban lists not included** — Standard and Commander ban lists change frequently and are not ingested. Judgebot will not have accurate information about whether specific cards are currently banned.
-- **No card text** — Judgebot answers rules questions but has no knowledge of individual card text or abilities. Questions like "does [card] work with [card]?" require the player to supply the relevant card text.
 - **Rules currency** — Answers are only as current as the last ingestion. If rules have been updated since the database was built, Judgebot may give outdated answers.
 - **Commander rules source** — The Commander rules are manually copied plain text from mtgcommander.net rather than a structured official document, which means they have less precise citation metadata than the Comprehensive Rules.
 - **Retrieval limits** — Complex multi-rule interactions may require context from several different rule sections simultaneously. If the relevant rules don't surface in the top 5 retrieved chunks, the answer may be incomplete.
