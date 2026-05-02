@@ -1,12 +1,14 @@
 # main.py
 # MTG Judgebot — Gradio chat UI
 # Retrieves relevant rules chunks and uses Claude to answer MTG rules questions.
+# Card lookups are handled via the Scryfall API when card names are detected.
 
 import os
 from dotenv import load_dotenv
 import anthropic
 import gradio as gr
 from retrieval import load_retriever, retrieve
+from scryfall import lookup_cards_in_question, format_card_for_context
 
 load_dotenv()
 
@@ -21,14 +23,19 @@ SYSTEM_PROMPT = """You are MTG Judgebot, an expert Magic: The Gathering rules as
 You answer rules questions clearly and accurately, covering Standard and Commander formats.
 
 You will be given relevant excerpts from official MTG rules documents before each question.
-Base your answers on those excerpts. Always cite the source and rule number when available.
+You may also be given card data retrieved from Scryfall. If card data is provided, always
+mention that you looked up the card on Scryfall so the player knows where that information
+came from.
+
+Base your answers on the provided rules excerpts and card data. Always cite sources.
 
 Guidelines:
-- Be precise but approachable — players range from casual to competitive
+- Be precise but approachable, players range from casual to competitive
 - If a rule applies differently in Commander vs Standard, explain both
 - If the retrieved context doesn't contain enough information to answer confidently, say so
-- Format citations as: [Source: <filename>, Rule <number>]
-- Never invent rules — if you're unsure, say so and suggest the player consult a judge"""
+- Format rules citations as: [Source: <filename>, Rule <number>]
+- Format card citations as: [Card data: Scryfall]
+- Never invent rules or card text — if you're unsure, say so and suggest the player consult a judge"""
 
 # ── Load retriever once at startup ────────────────────────────────────────────
 
@@ -40,8 +47,8 @@ client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 # ── Core logic ────────────────────────────────────────────────────────────────
 
-def build_context(chunks: list[dict]) -> str:
-    """Format retrieved chunks into a context block for the prompt."""
+def build_rules_context(chunks: list[dict]) -> str:
+    """Format retrieved rules chunks into a context block for the prompt."""
     lines = ["Relevant rules excerpts:\n"]
     for i, chunk in enumerate(chunks, 1):
         lines.append(f"[Excerpt {i}]")
@@ -51,15 +58,43 @@ def build_context(chunks: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def answer_question(query: str, history: list) -> str:
-    """Retrieve relevant chunks and ask Claude to answer the question."""
+def build_card_context(cards: list[dict]) -> str:
+    """Format Scryfall card data into a context block for the prompt."""
+    if not cards:
+        return ""
+    lines = ["Card data from Scryfall:\n"]
+    for card in cards:
+        lines.append(format_card_for_context(card))
+        lines.append("")
+    return "\n".join(lines)
 
-    # Retrieve relevant rules chunks
+
+def answer_question(query: str, history: list) -> str:
+    """
+    1. Look up any card names detected in the question via Scryfall
+    2. Retrieve relevant rules chunks from ChromaDB
+    3. Send both as context to Claude
+    """
+
+    # Card lookup
+    cards = lookup_cards_in_question(query)
+    card_context = build_card_context(cards)
+    if cards:
+        print(f"  Scryfall: found {len(cards)} card(s): {[c['name'] for c in cards]}")
+    else:
+        print(f"  Scryfall: no cards detected")
+
+    # Rules retrieval
     chunks = retrieve(query, model, collection)
-    context = build_context(chunks)
+    rules_context = build_rules_context(chunks)
+
+    # Combine context blocks
+    full_context = ""
+    if card_context:
+        full_context += card_context + "\n"
+    full_context += rules_context
 
     # Build conversation history for Claude
-    # Handle both old tuple format and new Gradio dict format
     messages = []
     for item in history:
         if isinstance(item, dict):
@@ -72,7 +107,7 @@ def answer_question(query: str, history: list) -> str:
     # Add current question with context prepended
     messages.append({
         "role": "user",
-        "content": f"{context}\n\nQuestion: {query}"
+        "content": f"{full_context}\n\nQuestion: {query}"
     })
 
     response = client.messages.create(

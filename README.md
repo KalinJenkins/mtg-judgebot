@@ -35,6 +35,9 @@ Claude API (context + question)
 Answer with citations
 ```
 
+### Card lookup via Scryfall
+When a question mentions a card name, Judgebot queries the Scryfall API for that card's oracle text, mana cost, type, and format legality. Scryfall's fuzzy matching handles misspellings and missing punctuation. Card data is combined with the rules context before being sent to Claude.
+
 
 ## Stack
 
@@ -45,6 +48,7 @@ Answer with citations
 - [Gradio](https://www.gradio.app/) — chat UI
 - [pypdf](https://pypdf.readthedocs.io/) — PDF text extraction
 - [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/) — HTML stripping
+- [Scryfall API](https://scryfall.com/docs/api) — live card data lookup, no API key required
 
 ## Setup
 
