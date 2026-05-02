@@ -128,18 +128,15 @@ def chat(message, history):
 
 with gr.Blocks(title="MTG Judgebot") as demo:
     gr.Markdown("# MTG Judgebot")
-    gr.Markdown("Ask rules questions about **Standard** or **Commander** format.")
-    gr.Markdown("""
-    Answers are sourced from the official MTG Comprehensive Rules, Magic Tournament Rules, 
-    and Commander format rules. Card data is retrieved live from the Scryfall API.
-    ⚠️ Ban lists are not included — always verify card legality before a tournament.
-    [View on GitHub](https://github.com/KalinJenkins/mtg-judgebot)
-        """)
-
+    gr.Markdown("Ask the Judgebots questions about the Magic The Gathering ruleset **Standard** or **Commander** formats, including card interactions or card specific information.")
+    gr.Markdown("Answers are sourced from the official MTG Comprehensive Rules, Magic Tournament Rules, and Commander format rules. Card data is retrieved live from the Scryfall API. Ban lists are not included — always verify card legality before a tournament.")
+    gr.Markdown("Technical details on the RAG and dataset are available at the github page below.")
 
     chatbot = gr.ChatInterface(
         fn=chat,
         chatbot=gr.Chatbot(height="70vh"),
     )
+
+    gr.Markdown("[GitHub - KalinJenkins/mtg-judgebot](https://github.com/KalinJenkins/mtg-judgebot)")
 
 demo.launch(server_name="0.0.0.0", server_port=7860)
