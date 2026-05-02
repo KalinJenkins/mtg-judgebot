@@ -15,6 +15,9 @@ load_dotenv()
 # ── Configuration ─────────────────────────────────────────────────────────────
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+JUDGEBOT_USERNAME = os.getenv("JUDGEBOT_USERNAME")
+JUDGEBOT_PASSWORD = os.getenv("JUDGEBOT_PASSWORD")
+
 MODEL = "claude-opus-4-5"
 MAX_TOKENS = 1024
 NUM_RETRIEVAL_RESULTS = 5
@@ -139,4 +142,8 @@ with gr.Blocks(title="MTG Judgebot") as demo:
 
     gr.Markdown("[GitHub - KalinJenkins/mtg-judgebot](https://github.com/KalinJenkins/mtg-judgebot)")
 
-demo.launch(server_name="0.0.0.0", server_port=7860)
+demo.launch(
+    server_name="0.0.0.0",
+    server_port=7860,
+    auth=(JUDGEBOT_USERNAME, JUDGEBOT_PASSWORD),
+)
