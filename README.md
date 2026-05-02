@@ -65,6 +65,8 @@ pip install -r requirements.txt
 Create a `.env` file:
 ```
 ANTHROPIC_API_KEY=your_key_here
+JUDGEBOT_USERNAME=your_chosen_username
+JUDGEBOT_PASSWORD=your_chosen_password
 ```
 
 Download the rules documents into `rules/`:
